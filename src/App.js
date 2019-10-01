@@ -1,26 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import {
+  BrowserRouter as Router,
+  Route, Redirect, Switch
+} from 'react-router-dom';
+import { withCookies } from 'react-cookie';
+import 'bootstrap/dist/css/bootstrap.css';
+import Login from './pages/login';
+import Dashboard from './pages/dashboard';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  render() {
+    const { cookies } = this.props;
+    const token = cookies.get('token');
+    return (
+      <Router>
+        {
+          /**
+              * React router Switch case for authenticated or not authenticated route
+           */
+        }
+        {token ? <Switch>
+          <Route exact path='/dashboard' render={() => (<Dashboard {
+            ...{
+              token,
+              cookies: this.props.cookies
+            }
+          } />)}></Route>
+          <Route render={() => (<Redirect to='/dashboard' />)} />
+        </Switch> :
+          <Switch>
+            <Route exact path='/login' render={() => (<Login {
+              ...{
+                cookies: this.props.cookies
+              }
+            } />)}></Route>
+            <Route render={() => (<Redirect to='/login' />)} />
+          </Switch>
+        }
+      </Router>
+    );
+  }
 }
 
-export default App;
+export default withCookies(App);
