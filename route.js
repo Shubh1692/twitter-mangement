@@ -21,7 +21,6 @@ module.exports = (app, passport) => {
         });
     userRouter.route('/auth/twitter')
         .post((req, res, next) => {
-            console.log(req.query)
             request.post({
                 url: `https://api.twitter.com/oauth/access_token?oauth_verifier`,
                 oauth: {
@@ -35,7 +34,6 @@ module.exports = (app, passport) => {
                     if (err) {
                         return res.send(500, { message: err.message });
                     }
-                    console.log('body', body);
                     const bodyString = '{ "' + body.replace(/&/g, '", "').replace(/=/g, '": "') + '"}';
                     const parsedBody = JSON.parse(bodyString);
                     req.body['oauth_token'] = parsedBody.oauth_token;
