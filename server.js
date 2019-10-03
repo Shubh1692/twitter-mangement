@@ -12,11 +12,11 @@
         User = require('./user'),
         path = require('path');
     // connect app to database
-    await mongoose.connect(Config.MONGO_URL, {}).then((success) => {
-        console.info('success connect mongo db')
-    }, (error) => {
-        console.error('error connect mongo db', error)
-    });
+    // await mongoose.connect(Config.MONGO_URL, {}).then((success) => {
+    //     console.info('success connect mongo db')
+    // }, (error) => {
+    //     console.error('error connect mongo db', error)
+    // });
 
 
     app.use(cors());

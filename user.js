@@ -16,4 +16,8 @@ const mongoose = require("mongoose"),
         timestamps: true
     });
 // Export User Schema
-module.exports = mongoose.model('User', UserSchema);;
+//module.exports = mongoose.model('User', UserSchema);
+const users = [];
+module.exports = {
+    findById: (id)=> (users[users.findIndex(({userId})=> (userId === id))])
+}

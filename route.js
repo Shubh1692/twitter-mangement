@@ -2,7 +2,7 @@ const userRouter = require('express').Router(),
     { generateToken, sendToken } = require('./token-management'),
     request = require('request');
 module.exports = (app, passport) => {
-    userRouter.route('/auth/twitter/reverse')
+    userRouter.route('/request_token')
         .post((req, res) => {
             request.post({
                 url: 'https://api.twitter.com/oauth/request_token',
@@ -19,7 +19,7 @@ module.exports = (app, passport) => {
                 res.send(JSON.parse(jsonStr));
             });
         });
-    userRouter.route('/auth/twitter')
+    userRouter.route('/access_token')
         .post((req, res, next) => {
             request.post({
                 url: `https://api.twitter.com/oauth/access_token?oauth_verifier`,
@@ -29,7 +29,7 @@ module.exports = (app, passport) => {
                     token: req.query.oauth_token
                 },
                 form: { oauth_verifier: req.query.oauth_verifier }
-            }, function (err, r, body) {
+            }, (err, r, body) => {
                 try {
                     if (err) {
                         return res.send(500, { message: err.message });
@@ -39,7 +39,17 @@ module.exports = (app, passport) => {
                     req.body['oauth_token'] = parsedBody.oauth_token;
                     req.body['oauth_token_secret'] = parsedBody.oauth_token_secret;
                     req.body['user_id'] = parsedBody.user_id;
-                    next();
+                    request.post({
+                        url: `https://api.twitter.com/1.1/account/verify_credentials.json`,
+                        body: req.body
+                    }, (err, r, body) => {
+                        if (err) {
+                            return res.send(500, { message: err.message });
+                        }
+                        const bodyString = '{ "' + body.replace(/&/g, '", "').replace(/=/g, '": "') + '"}';
+                        const parsedBody = JSON.parse(bodyString);
+                        console.log(parsedBody);
+                    });
                 } catch (error) {
                     res.send(400, err || body || "Error while login with twitter");
                 }

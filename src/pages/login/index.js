@@ -20,7 +20,7 @@ class Login extends Component {
         await this.setState({
             loginResponse: null
         });
-        const loginRequest = await fetch(`${API_DOMAIN}/user/auth/twitter/reverse`, {
+        const loginRequest = await fetch(`${API_DOMAIN}/user/request_token`, {
             method: 'POST'
         });
         const loginResponse = await loginRequest.json();
@@ -46,7 +46,7 @@ class Login extends Component {
             oauth_verifier: pin,
             oauth_token: loginResponse.oauth_token
         })
-        const authRequest = await fetch(`${API_DOMAIN}/user/auth/twitter?oauth_verifier=${pin}&oauth_token=${loginResponse.oauth_token}`, {
+        const authRequest = await fetch(`${API_DOMAIN}/user/access_token?oauth_verifier=${pin}&oauth_token=${loginResponse.oauth_token}`, {
             method: 'POST',
             body
         });
