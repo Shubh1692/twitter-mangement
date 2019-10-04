@@ -12,19 +12,16 @@
         User = require('./user'),
         path = require('path');
     // connect app to database
-    // await mongoose.connect(Config.MONGO_URL, {}).then((success) => {
-    //     console.info('success connect mongo db')
-    // }, (error) => {
-    //     console.error('error connect mongo db', error)
-    // });
+    await mongoose.connect(Config.MONGO_URL, {}).then((success) => {
+        console.info('success connect mongo db')
+    }, (error) => {
+        console.error('error connect mongo db', error)
+    });
 
 
     app.use(cors());
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
-    app.use(cookieParser()); // read cookies (needed for auth)
-    app.use(bodyParser.json()); // get information from html forms
+ 
+   
     app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', Config.REQUEST_HEADER['Access-Control-Allow-Origin']);
         res.setHeader('Access-Control-Allow-Methods', Config.REQUEST_HEADER['Access-Control-Allow-Methods']);
@@ -32,7 +29,11 @@
         res.setHeader('Access-Control-Allow-Credentials', Config.REQUEST_HEADER['Access-Control-Allow-Credentials']);
         next();
     });
-
+    app.use(cookieParser()); // read cookies (needed for auth)
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json()); // get information from html forms
     app.use(session({ secret: Config.EXPRESS_SESSION.SECRET, cookie: { maxAge: Config.EXPRESS_SESSION.COOKIES_MAX_AGE } }));
     require('./passport')(passport, User);
 
