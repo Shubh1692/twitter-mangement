@@ -36,7 +36,6 @@
     app.use(bodyParser.json()); // get information from html forms
     app.use(session({ secret: Config.EXPRESS_SESSION.SECRET, cookie: { maxAge: Config.EXPRESS_SESSION.COOKIES_MAX_AGE } }));
     require('./passport')(passport, User);
-
     require('./route')(app, passport, User);
     app.use(passport.initialize());
     app.use(passport.session()); // persistent login sessions

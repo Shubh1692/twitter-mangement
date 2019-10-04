@@ -3,11 +3,12 @@ const userRouter = require('express').Router(),
     Config = require('./app.config'),
     request = require('request'),
     twitterAPI = require('node-twitter-api'),
+    { sortBy } = require('lodash'),
     twitter = new twitterAPI({
         consumerKey: Config.TWITTER_CONFIG.KEY,
         consumerSecret: Config.TWITTER_CONFIG.SECRET,
         callback: Config.TWITTER_CONFIG.CALLBACK,
-    });;
+    });
 module.exports = (app, passport, User) => {
     userRouter.route('/request_token')
         .post((req, res) => {
@@ -44,8 +45,8 @@ module.exports = (app, passport, User) => {
                     }
                     const bodyString = '{ "' + body.replace(/&/g, '", "').replace(/=/g, '": "') + '"}';
                     const twitterProvider = JSON.parse(bodyString);
-                    twitter.verifyCredentials(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, {}, async(err, userProfile)=> {
-                        if(err) {
+                    twitter.verifyCredentials(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, {}, async (err, userProfile) => {
+                        if (err) {
                             return res.send(400, { message: err.message });
                         }
                         const user = await User.findOneAndUpdate({
@@ -75,10 +76,21 @@ module.exports = (app, passport, User) => {
     userRouter.route('/getTweets').get(passport.authenticate('jwt', { session: false }), (req, res) => {
         twitter.getTimeline('user_timeline', {
             screen_name: req.user.twitterProvider.screen_name
-        }, req.user.twitterProvider.oauth_token, req.user.twitterProvider.oauth_token_secret, (err, tweets) => {
+        }, req.user.twitterProvider.oauth_token, req.user.twitterProvider.oauth_token_secret, (err, mainTweets) => {
             if (err) {
                 return res.send(400, 'Error while fetching tweets');
             }
+            let tweets = {};
+            mainTweets.forEach(tweet => {
+                if (!tweets[tweet.in_reply_to_status_id_str]) {
+                    tweets[tweet.in_reply_to_status_id_str] = [];
+                }
+                tweets[tweet.in_reply_to_status_id_str].push(tweet);
+            });
+            for (let i in tweets) {
+                tweets[i] = sortBy(tweets[i], (tweet)=>  new Date(tweet.created_at));
+            }
+            tweets["null"]= tweets["null"].reverse();
             res.send({
                 tweets,
                 user: req.user
@@ -88,7 +100,7 @@ module.exports = (app, passport, User) => {
     userRouter.route('/replayToTweet').post(passport.authenticate('jwt', { session: false }), (req, res) => {
         twitter.statuses('update', {
             in_reply_to_status_id: req.body.id,
-            status: `@${req.user.userName} -${req.body.replyTweet}`,
+            status: `${req.body.replyTweet}`,
         }, req.user.twitterProvider.oauth_token, req.user.twitterProvider.oauth_token_secret, (err, replyTweet) => {
             if (err) {
                 return res.send(400, 'Error while reply a tweet');
