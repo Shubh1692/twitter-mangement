@@ -80,9 +80,10 @@ module.exports = (app, passport, User) => {
                 return res.send(400, 'Error while fetching tweets');
             }
             res.send({
-                tweets
+                tweets,
+                user: req.user
             });
-        })
+        });
     });
     app.use('/user/', userRouter);
 }
