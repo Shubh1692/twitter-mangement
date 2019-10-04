@@ -20,8 +20,11 @@ class Login extends Component {
         await this.setState({
             loginResponse: null
         });
-        const loginRequest = await fetch(`${API_DOMAIN}/user/auth/twitter/reverse`, {
-            method: 'POST'
+        const loginRequest = await fetch(`${API_DOMAIN}/user/request_token`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            }
         });
         const loginResponse = await loginRequest.json();
         this.setState({
@@ -46,12 +49,16 @@ class Login extends Component {
             oauth_verifier: pin,
             oauth_token: loginResponse.oauth_token
         })
-        const authRequest = await fetch(`${API_DOMAIN}/user/auth/twitter?oauth_verifier=${pin}&oauth_token=${loginResponse.oauth_token}`, {
+        const authRequest = await fetch(`${API_DOMAIN}/user/access_token`, {
             method: 'POST',
-            body
+            body,
+            headers: {
+                "Content-Type": "application/json"
+            }
         });
         if(authRequest.status === 200) {
-            cookies.set('token', authRequest.headers['x-auth-token'], { path: '/' });
+            const {token} =  await authRequest.json();
+            cookies.set('token', token, { path: '/' });
         } else {
             alert('Error in submit pin');
         }

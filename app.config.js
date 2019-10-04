@@ -12,7 +12,8 @@ module.exports = {
     },
     MONGO_URL: process.env.MONGO_URL || "mongodb://localhost:27017/twitter-management",
     TWITTER_CONFIG: {
-        KEY: '4kjMmNS3P2UNwxs8upiKfMU9a',
-        SECRET: '4FXp3xkQvN0xxPdtEWqUsgHNMxCgIldzhDunR3d0TsuDvzWnXg'
+        KEY: process.env.TWITTER_CONFIG_KEY,
+        SECRET:  process.env.TWITTER_CONFIG_SECRET,
+        CALLBACK: process.env.CALLBACK_URL || "http%3A%2F%2Flocalhost%3A4000%2Ftwitter-callback"
     }
 }
