@@ -85,5 +85,19 @@ module.exports = (app, passport, User) => {
             });
         });
     });
+    userRouter.route('/replayToTweet').post(passport.authenticate('jwt', { session: false }), (req, res) => {
+        twitter.statuses('update', {
+            in_reply_to_status_id: req.body.id,
+            status: `@${req.user.userName} -${req.body.replyTweet}`,
+        }, req.user.twitterProvider.oauth_token, req.user.twitterProvider.oauth_token_secret, (err, replyTweet) => {
+            if (err) {
+                return res.send(400, 'Error while reply a tweet');
+            }
+            res.send({
+                replyTweet,
+                user: req.user
+            });
+        });
+    });
     app.use('/user/', userRouter);
 }
