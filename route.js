@@ -40,7 +40,7 @@ module.exports = (app, passport, User) => {
     userRouter.route('/access_token')
         .post(async (req, res) => {
             request.post({
-                url: `https://api.twitter.com/oauth/access_token?oauth_verifier=${req.body.oauth_verifier}`,
+                url: `https://api.twitter.com/oauth/access_token`,
                 oauth: {
                     consumer_key: Config.TWITTER_CONFIG.KEY,
                     consumer_secret: Config.TWITTER_CONFIG.SECRET,
@@ -48,7 +48,7 @@ module.exports = (app, passport, User) => {
                 },
                 form: { oauth_verifier: Number(req.body.oauth_verifier) }
             }, async (err, r, body) => {
-                console.log(err, body)
+                console.log(err, body, req.body)
                 try {
                     if (err) {
                         return res.send(400, { message: err.message });
