@@ -10,6 +10,14 @@ const userRouter = require('express').Router(),
         callback: Config.TWITTER_CONFIG.CALLBACK,
     });
 module.exports = (app, passport, User) => {
+    const isAuthenticate = (req, res, next) => {
+        if(req.user) {
+            return next();
+        }
+        return res.send(401, {
+            user: req.user
+        });
+    };
     userRouter.route('/request_token')
         .post((req, res) => {
             request.post({
@@ -21,6 +29,7 @@ module.exports = (app, passport, User) => {
                 },
                 json: true,
             }, (err, r, body) => {
+                console.log(err, body)
                 if (err) {
                     return res.send(500, { message: err.message });
                 }
@@ -31,7 +40,7 @@ module.exports = (app, passport, User) => {
     userRouter.route('/access_token')
         .post(async (req, res) => {
             request.post({
-                url: `https://api.twitter.com/oauth/access_token?oauth_verifier=${req.body.oauth_verifier}`,
+                url: `https://api.twitter.com/oauth/access_token`,
                 oauth: {
                     consumer_key: Config.TWITTER_CONFIG.KEY,
                     consumer_secret: Config.TWITTER_CONFIG.SECRET,
@@ -39,6 +48,7 @@ module.exports = (app, passport, User) => {
                 },
                 form: { oauth_verifier: Number(req.body.oauth_verifier) }
             }, async (err, r, body) => {
+                console.log(err, body, req.body)
                 try {
                     if (err) {
                         return res.send(400, { message: err.message });
@@ -73,7 +83,7 @@ module.exports = (app, passport, User) => {
                 }
             });
         });
-    userRouter.route('/getTweets').get(passport.authenticate('jwt', { session: false }), (req, res) => {
+    userRouter.route('/getTweets').get(passport.authenticate('jwt', { session: false }), isAuthenticate, (req, res) => {
         twitter.getTimeline('user_timeline', {
             screen_name: req.user.twitterProvider.screen_name
         }, req.user.twitterProvider.oauth_token, req.user.twitterProvider.oauth_token_secret, (err, mainTweets) => {
@@ -97,7 +107,7 @@ module.exports = (app, passport, User) => {
             });
         });
     });
-    userRouter.route('/replayToTweet').post(passport.authenticate('jwt', { session: false }), (req, res) => {
+    userRouter.route('/replayToTweet').post(passport.authenticate('jwt', { session: false }), isAuthenticate, (req, res) => {
         twitter.statuses('update', {
             in_reply_to_status_id: req.body.id,
             status: `${req.body.replyTweet}`,
@@ -109,6 +119,11 @@ module.exports = (app, passport, User) => {
                 replyTweet,
                 user: req.user
             });
+        });
+    });
+    userRouter.route('/authenticate').get(passport.authenticate('jwt', { session: false }), isAuthenticate, (req, res) => {
+        res.send({
+            user: req.user
         });
     });
     app.use('/user/', userRouter);
